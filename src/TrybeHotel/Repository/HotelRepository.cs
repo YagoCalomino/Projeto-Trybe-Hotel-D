@@ -3,7 +3,7 @@ using TrybeHotel.Dto;
 
 namespace TrybeHotel.Repository
 {
-    public class HotelRepository : IHotelRepository
+    public class HotelRepository : IHotelRepository //iniciando projeto
     {
         protected readonly ITrybeHotelContext _context;
         public HotelRepository(ITrybeHotelContext context)
