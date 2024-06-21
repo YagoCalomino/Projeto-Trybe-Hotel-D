@@ -1,19 +1,16 @@
 namespace TrybeHotel.Test;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using TrybeHotel.Models;
 using TrybeHotel.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text.Json;
-using System.Diagnostics;
-using System.Xml;
-using System.IO;
+using System.Net.Http.Headers;
+using TrybeHotel.Dto;
 
-public class LoginJson {
-    public string? token { get; set; }
-}
+// public class LoginJson {
+//     public string? token { get; set; }
+// }
 
 
 public class IntegrationTest: IClassFixture<WebApplicationFactory<Program>>
@@ -85,5 +82,108 @@ public class IntegrationTest: IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal(System.Net.HttpStatusCode.OK, response?.StatusCode);
     }
 
+    [Theory(DisplayName = "POST /city")]
+    [InlineData("/city")]
+    public async Task TestPost(string url)
+    {
+        var response = await _clientTest.PostAsync(url, new StringContent(JsonConvert.SerializeObject(new City { CityId = 3, Name = "São Paulo" }), System.Text.Encoding.UTF8, "application/json"));
+        Assert.Equal(System.Net.HttpStatusCode.Created, response?.StatusCode);
+    }
+
+    [Theory(DisplayName = "GET /hotel")]
+    [InlineData("/hotel")]
+    public async Task TestGetHotel(string url)
+    {
+        var response = await _clientTest.GetAsync(url);
+        Assert.Equal(System.Net.HttpStatusCode.OK, response?.StatusCode);
+    }
+
+    [Theory(DisplayName = "POST /hotel")]
+    [InlineData("/hotel")]
+    public async Task TestPostHotel(string url)
+    {
+        var login = new { Email = "ana@trybehotel.com", Password = "Senha1" };
+
+        var loginResponse = await _clientTest.PostAsync("/login", new StringContent(JsonConvert.SerializeObject(login), System.Text.Encoding.UTF8, "application/json"));
+        var loginContent = await loginResponse.Content.ReadAsStringAsync();
+
+        var tokenResponse = JsonConvert.DeserializeObject<LoginResponseDto>(loginContent);
+        var token = tokenResponse!.Token;
+
+        _clientTest.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+
+        var response = await _clientTest.PostAsync(url, new StringContent(JsonConvert.SerializeObject(new Hotel { Name = "Trybe Hotel Palmas 2.0", Address = "Address 4", CityId = 2 }), System.Text.Encoding.UTF8, "application/json"));
+        Assert.Equal(System.Net.HttpStatusCode.Created, response?.StatusCode);
+    }
+
+    [Theory(DisplayName = "GET /room/:hotelId")]
+    [InlineData("/room/1")]
+    public async Task TestGetRoom(string url)
+    {
+        var response = await _clientTest.GetAsync(url);
+        Assert.Equal(System.Net.HttpStatusCode.OK, response?.StatusCode);
+    }
     
+        [Theory(DisplayName = "POST /room")]
+    [InlineData("/room")]
+    public async Task TestPostRoom(string url)
+    {
+        var login = new { Email = "ana@trybehotel.com", Password = "Senha1" };
+
+        var loginResponse = await _clientTest.PostAsync("/login", new StringContent(JsonConvert.SerializeObject(login), System.Text.Encoding.UTF8, "application/json"));
+        var loginContent = await loginResponse.Content.ReadAsStringAsync();
+
+        var tokenResponse = JsonConvert.DeserializeObject<LoginResponseDto>(loginContent);
+        var token = tokenResponse!.Token;
+
+        _clientTest.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _clientTest.PostAsync(url, new StringContent(JsonConvert.SerializeObject(new Room { Name = "Room 10", Capacity = 2, Image = "Image 10", HotelId = 1 }), System.Text.Encoding.UTF8, "application/json"));
+        Assert.Equal(System.Net.HttpStatusCode.Created, response?.StatusCode);
+    }
+
+    [Theory(DisplayName = "DELETE /room/:roomId")]
+    [InlineData("/room/1")]
+    public async Task TestDeleteRoom(string url)
+    {
+        var login = new { Email = "ana@trybehotel.com", Password = "Senha1" };
+
+        var loginResponse = await _clientTest.PostAsync("/login", new StringContent(JsonConvert.SerializeObject(login), System.Text.Encoding.UTF8, "application/json"));
+        var loginContent = await loginResponse.Content.ReadAsStringAsync();
+
+        var tokenResponse = JsonConvert.DeserializeObject<LoginResponseDto>(loginContent);
+        var token = tokenResponse!.Token;
+
+        _clientTest.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _clientTest.DeleteAsync(url);
+        Assert.Equal(System.Net.HttpStatusCode.NoContent, response?.StatusCode);
+    }
+
+    [Theory(DisplayName = "GET /user")]
+    [InlineData("/user")]
+    public async Task TestGetUser(string url)
+    {
+        var login = new { Email = "ana@trybehotel.com", Password = "Senha1" };
+
+        var loginResponse = await _clientTest.PostAsync("/login", new StringContent(JsonConvert.SerializeObject(login), System.Text.Encoding.UTF8, "application/json"));
+        var loginContent = await loginResponse.Content.ReadAsStringAsync();
+
+        var tokenResponse = JsonConvert.DeserializeObject<LoginResponseDto>(loginContent);
+        var token = tokenResponse!.Token;
+
+        _clientTest.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _clientTest.GetAsync(url);
+        Assert.Equal(System.Net.HttpStatusCode.OK, response?.StatusCode);
+    }
+
+    [Theory(DisplayName = "POST /user")]
+    [InlineData("/user")]
+    public async Task TestPostUser(string url)
+    {
+        var response = await _clientTest.PostAsync(url, new StringContent(JsonConvert.SerializeObject(new User { Name = "User novo", Email = "novouser@trybehotel.com", Password = "Senha4", UserType = "client" }), System.Text.Encoding.UTF8, "application/json"));
+        Assert.Equal(System.Net.HttpStatusCode.Created, response?.StatusCode);
+    }
 }

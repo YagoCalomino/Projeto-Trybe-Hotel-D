@@ -1,9 +1,11 @@
-namespace TrybeHotel.Models
+namespace TrybeHotel.Models;
+using System.ComponentModel.DataAnnotations;
+public class City
 {
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
+    [Key]
+    public int CityId { get; set; }
+    public string? Name { get; set; }
+    public string? State { get; set; }
 
-    public class City {
-
-    }
+    public ICollection<Hotel>? Hotels { get; set; }
 }
